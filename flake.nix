@@ -96,8 +96,7 @@
             "L+ /var/lib/cockpit/zfs - - - - ${cockpit-zfs-fixed}/share/cockpit/zfs"
             "L+ /usr/local/bin/python3 - - - - ${pkgs.python312.withPackages (ps: [ ps.py-libzfs ])}/bin/python3"
           ];
-        }
-      );
+        };
 
       nixosConfigurations.test-vm = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
