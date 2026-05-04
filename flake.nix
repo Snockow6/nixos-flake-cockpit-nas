@@ -63,24 +63,6 @@
               "include" = "registry";
             };
 
-            # Cockpit File Sharing requires include = registry in smb.conf
-            # We create a script that adds this to the generated smb.conf
-            systemd.services.samba-after-setup = {
-              description = "Add include=registry to smb.conf for Cockpit File Sharing";
-              after = [ "samba-smbd.service" ];
-              wantedBy = [ "multi-user.target" ];
-              serviceConfig = {
-                Type = "oneshot";
-                RemainAfterExit = true;
-              };
-              script = ''
-                SMB_CONF=/etc/samba/smb.conf
-                if ! grep -q "^include = registry" "$SMB_CONF" 2>/dev/null; then
-                  echo "include = registry" >> "$SMB_CONF"
-                fi
-              '';
-            };
-
             services.cockpit = {
               enable = true;
               openFirewall = true;
@@ -123,6 +105,7 @@
 
             systemd.tmpfiles.rules = [
               "L+ /var/lib/cockpit/file-sharing - - - - ${self.packages.${pkgs.stdenv.hostPlatform.system}.cockpit-file-sharing}/share/cockpit/file-sharing"
+              "L+ /var/lib/cockpit/identities - - - - ${self.packages.${pkgs.stdenv.hostPlatform.system}.cockpit-identities}/share/cockpit/identities"
               "L+ /var/lib/cockpit/zfs - - - - ${cockpit-zfs-fixed}/share/cockpit/zfs"
               "L+ /usr/local/bin/python3 - - - - ${pkgs.python312.withPackages (ps: [ ps.py-libzfs ])}/bin/python3"
             ];
