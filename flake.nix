@@ -64,11 +64,22 @@
             };
 
             # Cockpit File Sharing requires include = registry in smb.conf
-            # Override the generated smb.conf to include this directive
-            environment.etc."samba/smb.conf" = lib.mkForce (lib.hiPrio (pkgs.writeText "samba-smb.conf" ''
-              [global]
-              include = registry
-            ''));
+            # We create a script that adds this to the generated smb.conf
+            systemd.services.samba-after-setup = {
+              description = "Add include=registry to smb.conf for Cockpit File Sharing";
+              after = [ "samba-smbd.service" ];
+              wantedBy = [ "multi-user.target" ];
+              serviceConfig = {
+                Type = "oneshot";
+                RemainAfterExit = true;
+              };
+              script = ''
+                SMB_CONF=/etc/samba/smb.conf
+                if ! grep -q "^include = registry" "$SMB_CONF" 2>/dev/null; then
+                  echo "include = registry" >> "$SMB_CONF"
+                fi
+              '';
+            };
 
             services.cockpit = {
               enable = true;
