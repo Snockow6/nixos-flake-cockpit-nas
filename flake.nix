@@ -59,6 +59,7 @@
 
           config = {
             services.samba.enable = true;
+            services.samba.extraConfig = "include = registry";
 
             services.cockpit = {
               enable = true;
