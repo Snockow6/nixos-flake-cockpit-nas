@@ -57,56 +57,61 @@
             description = "Allowed origins for Cockpit connections";
           };
 
-          config = {
-            services.samba.enable = true;
-            services.samba.extraConfig = "include = registry";
+          config = lib.mkMerge [
+            {
+              services.samba.settings.global = {
+                "include" = "registry";
+              };
+            }
 
-            services.cockpit = {
-              enable = true;
-              openFirewall = true;
-              port = 9090;
-              package = cockpit-fixed;
-              settings = {
-                WebService = {
-                  LoginTo = false;
-                  Origins = lib.mkForce (lib.concatStringsSep " " cfg.origins);
+            {
+              services.cockpit = {
+                enable = true;
+                openFirewall = true;
+                port = 9090;
+                package = cockpit-fixed;
+                settings = {
+                  WebService = {
+                    LoginTo = false;
+                    Origins = lib.mkForce (lib.concatStringsSep " " cfg.origins);
+                  };
                 };
               };
-            };
 
-            systemd.services.cockpit.serviceConfig.PrivateDevices = false;
-            systemd.services."cockpit-wsinstance-https@".serviceConfig.PrivateDevices = false;
-            systemd.services."cockpit-wsinstance-http@".serviceConfig.PrivateDevices = false;
+              systemd.services.cockpit.serviceConfig.PrivateDevices = false;
+              systemd.services."cockpit-wsinstance-https@".serviceConfig.PrivateDevices = false;
+              systemd.services."cockpit-wsinstance-http@".serviceConfig.PrivateDevices = false;
 
-            services.udisks2.enable = true;
+              services.udisks2.enable = true;
 
-            environment.etc."udisks2/udisks2.conf" = lib.mkForce {
-              text = ''
-                [udisks2]
-                modules=
-              '';
-            };
+              environment.etc."udisks2/udisks2.conf" = lib.mkForce {
+                text = ''
+                  [udisks2]
+                  modules=
+                '';
+              };
 
-            virtualisation.podman = {
-              enable = true;
-              autoPrune.enable = true;
-            };
+              virtualisation.podman = {
+                enable = true;
+                autoPrune.enable = true;
+              };
 
-            environment.systemPackages = with pkgs; [
-              cockpit-fixed
-              unstable.cockpit-podman
-              self.packages.${pkgs.stdenv.hostPlatform.system}.cockpit-file-sharing
-              cockpit-zfs-fixed
-              (python312.withPackages (ps: [ ps.py-libzfs ]))
-              zfs
-            ];
+              environment.systemPackages = with pkgs; [
+                cockpit-fixed
+                unstable.cockpit-podman
+                self.packages.${pkgs.stdenv.hostPlatform.system}.cockpit-file-sharing
+                cockpit-zfs-fixed
+                (python312.withPackages (ps: [ ps.py-libzfs ]))
+                zfs
+              ];
 
-            systemd.tmpfiles.rules = [
-              "L+ /var/lib/cockpit/file-sharing - - - - ${self.packages.${pkgs.stdenv.hostPlatform.system}.cockpit-file-sharing}/share/cockpit/file-sharing"
-              "L+ /var/lib/cockpit/zfs - - - - ${cockpit-zfs-fixed}/share/cockpit/zfs"
-              "L+ /usr/local/bin/python3 - - - - ${pkgs.python312.withPackages (ps: [ ps.py-libzfs ])}/bin/python3"
-            ];
-          };
+              systemd.tmpfiles.rules = [
+                "L+ /var/lib/cockpit/file-sharing - - - - ${self.packages.${pkgs.stdenv.hostPlatform.system}.cockpit-file-sharing}/share/cockpit/file-sharing"
+                "L+ /var/lib/cockpit/zfs - - - - ${cockpit-zfs-fixed}/share/cockpit/zfs"
+                "L+ /usr/local/bin/python3 - - - - ${pkgs.python312.withPackages (ps: [ ps.py-libzfs ])}/bin/python3"
+              ];
+            }
+          ];
         };
 
       nixosConfigurations.test-vm = nixpkgs.lib.nixosSystem {
