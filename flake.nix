@@ -57,75 +57,80 @@
             description = "Allowed origins for Cockpit connections";
           };
 
-          config = lib.mkMerge [
-            {
-              services.samba.settings.global = {
-                "include" = "registry";
-              };
-            }
+          config = {
+            services.samba.enable = true;
+            services.samba.settings.global = {
+              "include" = "registry";
+            };
 
-            {
-              services.cockpit = {
-                enable = true;
-                openFirewall = true;
-                port = 9090;
-                package = cockpit-fixed;
-                settings = {
-                  WebService = {
-                    LoginTo = false;
-                    Origins = lib.mkForce (lib.concatStringsSep " " cfg.origins);
-                  };
+            # Cockpit File Sharing requires include = registry in smb.conf
+            # Override the generated smb.conf to include this directive
+            environment.etc."samba/smb.conf" = lib.mkForce (lib.hiPrio (pkgs.writeText "samba-smb.conf" ''
+              [global]
+              include = registry
+            ''));
+
+            services.cockpit = {
+              enable = true;
+              openFirewall = true;
+              port = 9090;
+              package = cockpit-fixed;
+              settings = {
+                WebService = {
+                  LoginTo = false;
+                  Origins = lib.mkForce (lib.concatStringsSep " " cfg.origins);
                 };
               };
+            };
 
-              systemd.services.cockpit.serviceConfig.PrivateDevices = false;
-              systemd.services."cockpit-wsinstance-https@".serviceConfig.PrivateDevices = false;
-              systemd.services."cockpit-wsinstance-http@".serviceConfig.PrivateDevices = false;
+            systemd.services.cockpit.serviceConfig.PrivateDevices = false;
+            systemd.services."cockpit-wsinstance-https@".serviceConfig.PrivateDevices = false;
+            systemd.services."cockpit-wsinstance-http@".serviceConfig.PrivateDevices = false;
 
-              services.udisks2.enable = true;
+            services.udisks2.enable = true;
 
-              environment.etc."udisks2/udisks2.conf" = lib.mkForce {
-                text = ''
-                  [udisks2]
-                  modules=
-                '';
-              };
+            environment.etc."udisks2/udisks2.conf" = lib.mkForce {
+              text = ''
+                [udisks2]
+                modules=
+              '';
+            };
 
-              virtualisation.podman = {
-                enable = true;
-                autoPrune.enable = true;
-              };
+            virtualisation.podman = {
+              enable = true;
+              autoPrune.enable = true;
+            };
 
-              environment.systemPackages = with pkgs; [
-                cockpit-fixed
-                unstable.cockpit-podman
-                self.packages.${pkgs.stdenv.hostPlatform.system}.cockpit-file-sharing
-                cockpit-zfs-fixed
-                (python312.withPackages (ps: [ ps.py-libzfs ]))
-                zfs
-              ];
+            environment.systemPackages = with pkgs; [
+              cockpit-fixed
+              unstable.cockpit-podman
+              self.packages.${pkgs.stdenv.hostPlatform.system}.cockpit-file-sharing
+              cockpit-zfs-fixed
+              (python312.withPackages (ps: [ ps.py-libzfs ]))
+              zfs
+            ];
 
-              systemd.tmpfiles.rules = [
-                "L+ /var/lib/cockpit/file-sharing - - - - ${self.packages.${pkgs.stdenv.hostPlatform.system}.cockpit-file-sharing}/share/cockpit/file-sharing"
-                "L+ /var/lib/cockpit/zfs - - - - ${cockpit-zfs-fixed}/share/cockpit/zfs"
-                "L+ /usr/local/bin/python3 - - - - ${pkgs.python312.withPackages (ps: [ ps.py-libzfs ])}/bin/python3"
-              ];
-            }
-          ];
+            systemd.tmpfiles.rules = [
+              "L+ /var/lib/cockpit/file-sharing - - - - ${self.packages.${pkgs.stdenv.hostPlatform.system}.cockpit-file-sharing}/share/cockpit/file-sharing"
+              "L+ /var/lib/cockpit/zfs - - - - ${cockpit-zfs-fixed}/share/cockpit/zfs"
+              "L+ /usr/local/bin/python3 - - - - ${pkgs.python312.withPackages (ps: [ ps.py-libzfs ])}/bin/python3"
+            ];
+          };
         };
 
-      nixosConfigurations.test-vm = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
-        modules = [
-          self.nixosModules.cockpit-nas
-          {
-            system.stateVersion = "25.11";
-            services.cockpit.origins = [ "https://localhost:9090" ];
-            boot.loader.grub.enable = true;
-            boot.loader.grub.device = "/dev/sda";
-            fileSystems."/" = { device = "/dev/sda"; fsType = "ext4"; };
-          }
-        ];
-      };
+      # Test VM removed - requires inputs passed to module
+      # nixosConfigurations.test-vm = nixpkgs.lib.nixosSystem {
+      #   system = "x86_64-linux";
+      #   modules = [
+      #     self.nixosModules.cockpit-nas
+      #     {
+      #       system.stateVersion = "25.11";
+      #       services.cockpit.origins = [ "https://localhost:9090" ];
+      #       boot.loader.grub.enable = true;
+      #       boot.loader.grub.device = "/dev/sda";
+      #       fileSystems."/" = { device = "/dev/sda"; fsType = "ext4"; };
+      #     }
+      #   ];
+      # };
     };
 }
