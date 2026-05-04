@@ -6,7 +6,7 @@ stdenv.mkDerivation rec {
 
   src = fetchurl {
     url = "https://github.com/45Drives/cockpit-identities/releases/download/v0.1.12/cockpit-identities_0.1.12-1focal_all.deb";
-    hash = "sha256-PdiMviuEnRE/kXQL8dpiM4HUpD07ipOdzC87Xz5bTlw=";
+    hash = "sha256-hdFBLaIQyG0OutNWJPxRLYlf1S8J7gqGKcwbw70Oglo=";
   };
 
   nativeBuildInputs = [ dpkg ];
