@@ -51,11 +51,23 @@
           });
         in
         {
-          options.services.cockpit.origins = lib.mkOption {
-            type = lib.types.listOf lib.types.str;
-            default = [ "https://localhost:9090" ];
-            description = "Allowed origins for Cockpit connections";
-          };
+options.services.cockpit.origins = lib.mkOption {
+  type = lib.types.listOf lib.types.str;
+  default = [ "https://localhost:9090" ];
+  description = "Allowed origins for Cockpit connections";
+};
+
+options.services.cockpit.enableMachines = lib.mkOption {
+  type = lib.types.bool;
+  default = false;
+  description = "Enable Cockpit Machines and libvirt for VM management";
+};
+
+options.services.cockpit.enableZfs = lib.mkOption {
+  type = lib.types.bool;
+  default = false;
+  description = "Enable Cockpit ZFS plugin for ZFS pool management";
+};
 
           config = {
             services.samba.enable = true;
@@ -76,6 +88,21 @@
               };
             };
 
+            services.netdata = {
+              enable = true;
+              package = pkgs.netdata.override { withCloudUi = true; };
+              claimTokenFile = "/etc/netdata/claim-token";
+            };
+
+            environment.etc."netdata/claim-token" = {
+              text = "E3Np7G2sRTKqupEsnLGrEkzILMfLRkKaAAyA5fR_oBSsRLeoOzPjqurBNqC2-G-8vkTU57Hk6YEq5hk5WY1zcX0EiFDX7fXeY22_H8GAeXx_NHENEyR3On1ZtYLb-0k3hhU64GA";
+              mode = "0400";
+              user = "netdata";
+              group = "netdata";
+            };
+
+            networking.firewall.allowedTCPPorts = [ 19999 ];
+
             systemd.services.cockpit.serviceConfig.PrivateDevices = false;
             systemd.services."cockpit-wsinstance-https@".serviceConfig.PrivateDevices = false;
             systemd.services."cockpit-wsinstance-http@".serviceConfig.PrivateDevices = false;
@@ -94,37 +121,49 @@
               autoPrune.enable = true;
             };
 
-            environment.systemPackages = with pkgs; [
-              cockpit-fixed
-              unstable.cockpit-podman
-              self.packages.${pkgs.stdenv.hostPlatform.system}.cockpit-file-sharing
-              cockpit-zfs-fixed
-              (python312.withPackages (ps: [ ps.py-libzfs ]))
-              zfs
-            ];
+            virtualisation.libvirtd.enable = lib.mkIf cfg.enableMachines true;
+
+            services.dbus.packages = lib.mkIf cfg.enableMachines [ pkgs.libvirt-dbus ];
+
+            systemd.packages = lib.mkIf cfg.enableMachines [ pkgs.libvirt-dbus ];
+
+            environment.systemPackages = with pkgs;
+              [
+                cockpit-fixed
+                unstable.cockpit-podman
+                self.packages.${pkgs.stdenv.hostPlatform.system}.cockpit-file-sharing
+              ]
+              ++ lib.optional cfg.enableMachines unstable.cockpit-machines
+              ++ lib.optional cfg.enableZfs cockpit-zfs-fixed
+              ++ lib.optional cfg.enableZfs (python312.withPackages (ps: [ ps.py-libzfs ]))
+              ++ lib.optional cfg.enableZfs zfs;
 
             systemd.tmpfiles.rules = [
               "L+ /var/lib/cockpit/file-sharing - - - - ${self.packages.${pkgs.stdenv.hostPlatform.system}.cockpit-file-sharing}/share/cockpit/file-sharing"
               "L+ /var/lib/cockpit/identities - - - - ${self.packages.${pkgs.stdenv.hostPlatform.system}.cockpit-identities}/share/cockpit/identities"
-              "L+ /var/lib/cockpit/zfs - - - - ${cockpit-zfs-fixed}/share/cockpit/zfs"
-              "L+ /usr/local/bin/python3 - - - - ${pkgs.python312.withPackages (ps: [ ps.py-libzfs ])}/bin/python3"
-            ];
+            ] ++ lib.optional cfg.enableMachines "L+ /var/lib/cockpit/machines - - - - ${unstable.cockpit-machines}/share/cockpit/machines"
+              ++ lib.optional cfg.enableZfs "L+ /var/lib/cockpit/zfs - - - - ${cockpit-zfs-fixed}/share/cockpit/zfs"
+              ++ lib.optional cfg.enableZfs "L+ /usr/local/bin/python3 - - - - ${pkgs.python312.withPackages (ps: [ ps.py-libzfs ])}/bin/python3";
           };
         };
 
-      # Test VM removed - requires inputs passed to module
-      # nixosConfigurations.test-vm = nixpkgs.lib.nixosSystem {
-      #   system = "x86_64-linux";
-      #   modules = [
-      #     self.nixosModules.cockpit-nas
-      #     {
-      #       system.stateVersion = "25.11";
-      #       services.cockpit.origins = [ "https://localhost:9090" ];
-      #       boot.loader.grub.enable = true;
-      #       boot.loader.grub.device = "/dev/sda";
-      #       fileSystems."/" = { device = "/dev/sda"; fsType = "ext4"; };
-      #     }
-      #   ];
-      # };
+      nixosConfigurations.nixostesting = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        modules = [
+          self.nixosModules.cockpit-nas
+          {
+            system.stateVersion = "25.11";
+            nixpkgs.config.allowUnfree = true;
+            networking.hostName = "nixostesting";
+            services.cockpit.origins = [
+              "https://localhost:9090"
+              "https://nixostesting:9090"
+            ];
+            boot.loader.grub.enable = true;
+            boot.loader.grub.device = "/dev/sda";
+            fileSystems."/" = { device = "/dev/sda"; fsType = "ext4"; };
+          }
+        ];
+      };
     };
 }

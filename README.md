@@ -10,7 +10,8 @@ A reusable NixOS flake module for deploying Cockpit with NAS-focused plugins and
   - `cockpit-identities`: User/group management
 - Integrated Samba with `include = registry` for Cockpit File Sharing
 - Podman integration via `cockpit-podman`
-- ZFS support with `cockpit-zfs`
+- Optional ZFS support with `cockpit-zfs` (via `enableZfs` option)
+- Optional VM management with `cockpit-machines` and `libvirtd` (via `enableMachines` option)
 - udisks2 configuration for storage management
 - Pre-configured systemd services for Cockpit and Samba
 
@@ -49,6 +50,12 @@ Add to your NixOS configuration imports:
     "https://your-hostname:9090"
     "https://your-ip:9090"
   ];
+
+  # Optional: Enable VM management with cockpit-machines and libvirt
+  services.cockpit.enableMachines = true;
+
+  # Optional: Enable ZFS management with cockpit-zfs
+  services.cockpit.enableZfs = true;
 }
 ```
 
@@ -64,13 +71,52 @@ Available via `self.packages.${system}`:
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `services.cockpit.origins` | `listOf str` | `["https://localhost:9090"]` | Allowed origins for Cockpit web connections |
+| `services.cockpit.enableMachines` | `bool` | `false` | Enable Cockpit Machines and libvirt for VM management |
+| `services.cockpit.enableZfs` | `bool` | `false` | Enable Cockpit ZFS plugin for ZFS pool management |
+
+## Deploying to Remote Machine
+
+A deploy script `deploy.sh` is included for deploying to the `nixostesting` remote machine.
+
+### Prerequisites
+
+- SSH access to `nixostesting` machine
+- Remote machine runs NixOS with flakes enabled
+
+### Usage
+
+```bash
+# Build and deploy (activate on remote)
+./deploy.sh
+
+# Build only (result in ./result)
+./deploy.sh --build
+
+# Build and copy to remote store (don't activate)
+./deploy.sh --copy
+```
+
+### Configuration
+
+The `nixostesting` configuration is defined in `flake.nix` under `nixosConfigurations.nixostesting`. To customize for your setup, edit:
+
+- `networking.hostName`: Hostname of the target machine
+- `boot.loader.grub.device`: Boot device for GRUB
+- `fileSystems."/"`: Root filesystem configuration
+- `services.cockpit.origins`: Allowed origins for Cockpit access
 
 ## Building
 
-Test the module with the included test VM configuration:
+Build the system configuration for `nixostesting`:
 
 ```bash
-nix build .#nixosConfigurations.test-vm
+nix build .#nixosConfigurations.nixostesting
+```
+
+Or use the deploy script:
+
+```bash
+./deploy.sh --build
 ```
 
 ## License
