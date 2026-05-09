@@ -116,8 +116,6 @@ options.services.cockpit.enableNavigator = lib.mkOption {
               group = "netdata";
             };
 
-            networking.firewall.allowedTCPPorts = [ 19999 ];
-
             systemd.services.cockpit.serviceConfig.PrivateDevices = false;
             systemd.services."cockpit-wsinstance-https@".serviceConfig.PrivateDevices = false;
             systemd.services."cockpit-wsinstance-http@".serviceConfig.PrivateDevices = false;
