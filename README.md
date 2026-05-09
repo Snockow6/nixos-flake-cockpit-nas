@@ -12,6 +12,7 @@ A reusable NixOS flake module for deploying Cockpit with NAS-focused plugins and
 - Podman integration via `cockpit-podman`
 - Optional ZFS support with `cockpit-zfs` (via `enableZfs` option)
 - Optional VM management with `cockpit-machines` and `libvirtd` (via `enableMachines` option)
+- Optional Tailscale integration with `cockpit-tailscale` (via `enableTailscale` option)
 - udisks2 configuration for storage management
 - Pre-configured systemd services for Cockpit and Samba
 
@@ -65,6 +66,7 @@ Available via `self.packages.${system}`:
 
 - `cockpit-file-sharing`: 45Drives plugin for managing Samba/NFS/iSCSI/S3 storage
 - `cockpit-identities`: 45Drives plugin for user and group management
+- `cockpit-tailscale`: 45Drives plugin for managing Tailscale nodes
 
 ## Module Options
 
