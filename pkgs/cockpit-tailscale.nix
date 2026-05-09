@@ -1,6 +1,6 @@
-{ lib, buildNpmPackage, fetchzip }:
+{ lib, stdenv, fetchzip, nodejs, python3 }:
 
-buildNpmPackage rec {
+stdenv.mkDerivation rec {
   pname = "cockpit-tailscale";
   version = "0.0.6";
 
@@ -9,11 +9,13 @@ buildNpmPackage rec {
     sha256 = "7eZXs/IhhD190LnhGO0i87YZBifG94OkdY+Zlb5xFAI=";
   };
 
-  postPatch = ''
-    npm install --package-lock-only
-  '';
+  nativeBuildInputs = [ nodejs python3 ];
 
-  npmDepsHash = lib.fakeHash;
+  buildPhase = ''
+    export HOME=$TMPDIR
+    npm install
+    npm run build
+  '';
 
   installPhase = ''
     mkdir -p $out/share/cockpit/tailscale
