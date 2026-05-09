@@ -52,11 +52,14 @@ Add to your NixOS configuration imports:
     "https://your-ip:9090"
   ];
 
-  # Optional: Enable VM management with cockpit-machines and libvirt
-  services.cockpit.enableMachines = true;
+   # Optional: Enable VM management with cockpit-machines and libvirt
+   services.cockpit.enableMachines = true;
 
-  # Optional: Enable ZFS management with cockpit-zfs
-  services.cockpit.enableZfs = true;
+   # Optional: Enable ZFS management with cockpit-zfs
+   services.cockpit.enableZfs = true;
+
+   # Optional: Enable Tailscale integration with cockpit-tailscale
+   services.cockpit.enableTailscale = true;
 }
 ```
 
