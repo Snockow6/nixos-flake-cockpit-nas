@@ -103,19 +103,6 @@ options.services.cockpit.enableNavigator = lib.mkOption {
               };
             };
 
-            services.netdata = {
-              enable = true;
-              package = pkgs.netdata.override { withCloudUi = true; };
-              claimTokenFile = "/etc/netdata/claim-token";
-            };
-
-            environment.etc."netdata/claim-token" = {
-              text = "E3Np7G2sRTKqupEsnLGrEkzILMfLRkKaAAyA5fR_oBSsRLeoOzPjqurBNqC2-G-8vkTU57Hk6YEq5hk5WY1zcX0EiFDX7fXeY22_H8GAeXx_NHENEyR3On1ZtYLb-0k3hhU64GA";
-              mode = "0400";
-              user = "netdata";
-              group = "netdata";
-            };
-
             systemd.services.cockpit.serviceConfig.PrivateDevices = false;
             systemd.services."cockpit-wsinstance-https@".serviceConfig.PrivateDevices = false;
             systemd.services."cockpit-wsinstance-http@".serviceConfig.PrivateDevices = false;
