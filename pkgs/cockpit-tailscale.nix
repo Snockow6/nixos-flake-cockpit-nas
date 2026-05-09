@@ -6,10 +6,10 @@ buildNpmPackage rec {
 
   src = fetchzip {
     url = "https://github.com/gbraad-cockpit/cockpit-tailscale/archive/refs/tags/v${version}.tar.gz";
-    sha256 = "q6CjEBoVAlYGMvdQ9IqPMNFlb6tyIGZ5dGq3mKMF2aA=";
+    sha256 = "7eZXs/IhhD190LnhGO0i87YZBifG94OkdY+Zlb5xFAI=";
   };
 
-  npmDepsHash = "sha256-Q9RZcFh2t3WnzKC7/WM2E77iEQN6oZ+xwIMYm/gFL3s=";
+  npmDepsHash = lib.fakeHash;
 
   installPhase = ''
     mkdir -p $out/share/cockpit/tailscale
