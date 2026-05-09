@@ -98,6 +98,7 @@ options.services.cockpit.enableNavigator = lib.mkOption {
                 WebService = {
                   LoginTo = false;
                   Origins = lib.mkForce (lib.concatStringsSep " " cfg.origins);
+                  CockpitCSP = lib.mkIf cfg.enableNavigator "default-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' ws: wss:; form-action 'none'; frame-ancestors 'self';";
                 };
               };
             };
