@@ -13,6 +13,7 @@ A reusable NixOS flake module for deploying Cockpit with NAS-focused plugins and
 - Optional ZFS support with `cockpit-zfs` (via `enableZfs` option)
 - Optional VM management with `cockpit-machines` and `libvirtd` (via `enableMachines` option)
 - Optional Tailscale integration with `cockpit-tailscale` (via `enableTailscale` option)
+- Optional disk usage visualization with `cockpit-navigator` (via `enableNavigator` option)
 - udisks2 configuration for storage management
 - Pre-configured systemd services for Cockpit and Samba
 
@@ -60,7 +61,10 @@ Add to your NixOS configuration imports:
 
    # Optional: Enable Tailscale integration with cockpit-tailscale
    services.cockpit.enableTailscale = true;
-}
+
+   # Optional: Enable Navigator plugin for disk usage visualization
+   services.cockpit.enableNavigator = true;
+ }
 ```
 
 ## Packages
@@ -70,6 +74,7 @@ Available via `self.packages.${system}`:
 - `cockpit-file-sharing`: 45Drives plugin for managing Samba/NFS/iSCSI/S3 storage
 - `cockpit-identities`: 45Drives plugin for user and group management
 - `cockpit-tailscale`: 45Drives plugin for managing Tailscale nodes
+- `cockpit-navigator`: 45Drives plugin for visual disk usage management
 
 ## Module Options
 
@@ -79,6 +84,7 @@ Available via `self.packages.${system}`:
 | `services.cockpit.enableMachines` | `bool` | `false` | Enable Cockpit Machines and libvirt for VM management |
 | `services.cockpit.enableZfs` | `bool` | `false` | Enable Cockpit ZFS plugin for ZFS pool management |
 | `services.cockpit.enableTailscale` | `bool` | `false` | Enable Cockpit Tailscale plugin for Tailscale node management |
+| `services.cockpit.enableNavigator` | `bool` | `false` | Enable Cockpit Navigator plugin for disk usage visualization |
 
 ## Deploying to Remote Machine
 
