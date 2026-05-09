@@ -1,15 +1,15 @@
-{ lib, stdenv, fetchzip, nodejs, npmBuildHook, python3 }:
+{ lib, buildNpmPackage, fetchzip }:
 
-stdenv.mkDerivation rec {
+buildNpmPackage rec {
   pname = "cockpit-tailscale";
   version = "0.0.6";
 
   src = fetchzip {
     url = "https://github.com/gbraad-cockpit/cockpit-tailscale/archive/refs/tags/v${version}.tar.gz";
-    hash = "sha256-q6CjEBoVAlYGMvdQ9IqPMNFlb6tyIGZ5dGq3mKMF2aA=";
+    sha256 = "q6CjEBoVAlYGMvdQ9IqPMNFlb6tyIGZ5dGq3mKMF2aA=";
   };
 
-  nativeBuildInputs = [ nodejs npmBuildHook python3 ];
+  npmDepsHash = "sha256-Q9RZcFh2t3WnzKC7/WM2E77iEQN6oZ+xwIMYm/gFL3s=";
 
   installPhase = ''
     mkdir -p $out/share/cockpit/tailscale
