@@ -78,6 +78,7 @@ Available via `self.packages.${system}`:
 | `services.cockpit.origins` | `listOf str` | `["https://localhost:9090"]` | Allowed origins for Cockpit web connections |
 | `services.cockpit.enableMachines` | `bool` | `false` | Enable Cockpit Machines and libvirt for VM management |
 | `services.cockpit.enableZfs` | `bool` | `false` | Enable Cockpit ZFS plugin for ZFS pool management |
+| `services.cockpit.enableTailscale` | `bool` | `false` | Enable Cockpit Tailscale plugin for Tailscale node management |
 
 ## Deploying to Remote Machine
 
