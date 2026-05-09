@@ -9,6 +9,10 @@ buildNpmPackage rec {
     sha256 = "7eZXs/IhhD190LnhGO0i87YZBifG94OkdY+Zlb5xFAI=";
   };
 
+  postPatch = ''
+    npm install --package-lock-only
+  '';
+
   npmDepsHash = lib.fakeHash;
 
   installPhase = ''
