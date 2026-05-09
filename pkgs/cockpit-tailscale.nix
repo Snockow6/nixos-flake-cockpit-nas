@@ -13,7 +13,7 @@ buildNpmPackage rec {
     cp ${./cockpit-tailscale-lock.json} package-lock.json
   '';
 
-  npmDepsHash = lib.fakeHash;
+  npmDepsHash = "sha256-4GdH1F3FwrnKTBtIvDL1ctK8ewv6x4jZuVOspw+SoXY=";
 
   installPhase = ''
     mkdir -p $out/share/cockpit/tailscale
