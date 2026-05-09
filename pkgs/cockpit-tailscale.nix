@@ -1,23 +1,23 @@
-{ lib, buildNpmPackage, fetchzip }:
+{ lib, stdenv, rpm, cpio, fetchurl }:
 
-buildNpmPackage rec {
+stdenv.mkDerivation rec {
   pname = "cockpit-tailscale";
   version = "0.0.6";
 
-  src = fetchzip {
-    url = "https://github.com/gbraad-cockpit/cockpit-tailscale/archive/refs/tags/v${version}.tar.gz";
-    sha256 = "7eZXs/IhhD190LnhGO0i87YZBifG94OkdY+Zlb5xFAI=";
+  src = fetchurl {
+    url = "https://github.com/gbraad-cockpit/cockpit-tailscale/releases/download/v${version}/cockpit-tailscale-v${version}-1.fc38.noarch.rpm";
+    hash = "sha256-eed3BFnYMTcTAYf6B1+0RMTEm1LCoiiwlGMr+ABtAqE=";
   };
 
-  postPatch = ''
-    cp ${./cockpit-tailscale-lock.json} package-lock.json
+  nativeBuildInputs = [ rpm cpio ];
+
+  unpackPhase = ''
+    rpm2cpio $src | cpio -idmv
   '';
 
-  npmDepsHash = "sha256-4GdH1F3FwrnKTBtIvDL1ctK8ewv6x4jZuVOspw+SoXY=";
-
   installPhase = ''
-    mkdir -p $out/share/cockpit/tailscale
-    cp -r dist/* $out/share/cockpit/tailscale/
+    mkdir -p $out/share/cockpit
+    cp -r usr/share/cockpit/tailscale $out/share/cockpit/
   '';
 
   meta = with lib; {
