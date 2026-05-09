@@ -19,6 +19,7 @@
         {
           cockpit-file-sharing = pkgs.callPackage ./pkgs/cockpit-file-sharing.nix {};
           cockpit-identities = pkgs.callPackage ./pkgs/cockpit-identities.nix {};
+          cockpit-tailscale = pkgs.callPackage ./pkgs/cockpit-tailscale.nix {};
         }
       );
 
@@ -143,7 +144,7 @@ options.services.cockpit.enableTailscale = lib.mkOption {
               ++ lib.optional cfg.enableZfs cockpit-zfs-fixed
               ++ lib.optional cfg.enableZfs (python312.withPackages (ps: [ ps.py-libzfs ]))
               ++ lib.optional cfg.enableZfs zfs
-              ++ lib.optional cfg.enableTailscale unstable.cockpit-tailscale;
+              ++ lib.optional cfg.enableTailscale self.packages.${pkgs.stdenv.hostPlatform.system}.cockpit-tailscale;
 
             systemd.tmpfiles.rules = [
               "L+ /var/lib/cockpit/file-sharing - - - - ${self.packages.${pkgs.stdenv.hostPlatform.system}.cockpit-file-sharing}/share/cockpit/file-sharing"
@@ -151,7 +152,7 @@ options.services.cockpit.enableTailscale = lib.mkOption {
             ] ++ lib.optional cfg.enableMachines "L+ /var/lib/cockpit/machines - - - - ${unstable.cockpit-machines}/share/cockpit/machines"
               ++ lib.optional cfg.enableZfs "L+ /var/lib/cockpit/zfs - - - - ${cockpit-zfs-fixed}/share/cockpit/zfs"
               ++ lib.optional cfg.enableZfs "L+ /usr/local/bin/python3 - - - - ${pkgs.python312.withPackages (ps: [ ps.py-libzfs ])}/bin/python3"
-              ++ lib.optional cfg.enableTailscale "L+ /var/lib/cockpit/tailscale - - - - ${unstable.cockpit-tailscale}/share/cockpit/tailscale";
+              ++ lib.optional cfg.enableTailscale "L+ /var/lib/cockpit/tailscale - - - - ${self.packages.${pkgs.stdenv.hostPlatform.system}.cockpit-tailscale}/share/cockpit/tailscale";
           };
         };
 
