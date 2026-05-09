@@ -1,4 +1,4 @@
-{ lib, buildNpmPackage, fetchzip, nodejs }:
+{ lib, buildNpmPackage, fetchzip }:
 
 buildNpmPackage rec {
   pname = "cockpit-tailscale";
@@ -9,10 +9,8 @@ buildNpmPackage rec {
     sha256 = "7eZXs/IhhD190LnhGO0i87YZBifG94OkdY+Zlb5xFAI=";
   };
 
-  nativeBuildInputs = [ nodejs ];
-
   postPatch = ''
-    npm install --package-lock-only
+    cp ${./cockpit-tailscale-lock.json} package-lock.json
   '';
 
   npmDepsHash = lib.fakeHash;
