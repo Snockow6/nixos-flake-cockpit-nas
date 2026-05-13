@@ -20,6 +20,10 @@ stdenv.mkDerivation rec {
     cp -r usr/share/cockpit/navigator $out/share/cockpit/
   '';
 
+  postFixup = ''
+    patchShebangs $out/share/cockpit/navigator/scripts
+  '';
+
   meta = with lib; {
     description = "Cockpit application for visual disk usage management";
     homepage = "https://github.com/45Drives/cockpit-navigator";

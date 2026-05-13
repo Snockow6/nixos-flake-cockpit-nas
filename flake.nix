@@ -98,7 +98,7 @@ options.services.cockpit.enableNavigator = lib.mkOption {
                 WebService = {
                   LoginTo = false;
                   Origins = lib.mkForce (lib.concatStringsSep " " cfg.origins);
-                  CockpitCSP = lib.mkIf cfg.enableNavigator "default-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' ws: wss:; form-action 'none'; frame-ancestors 'self';";
+                  CockpitCSP = "default-src 'self' 'unsafe-inline' 'unsafe-eval'; script-src-elem 'self' 'unsafe-inline'; connect-src 'self' ws: wss:; form-action 'none'; frame-ancestors 'self';";
                 };
               };
             };
@@ -147,7 +147,9 @@ options.services.cockpit.enableNavigator = lib.mkOption {
               ++ lib.optional cfg.enableZfs "L+ /var/lib/cockpit/zfs - - - - ${cockpit-zfs-fixed}/share/cockpit/zfs"
               ++ lib.optional cfg.enableZfs "L+ /usr/local/bin/python3 - - - - ${pkgs.python312.withPackages (ps: [ ps.py-libzfs ])}/bin/python3"
               ++ lib.optional cfg.enableTailscale "L+ /var/lib/cockpit/tailscale - - - - ${self.packages.${pkgs.stdenv.hostPlatform.system}.cockpit-tailscale}/share/cockpit/tailscale"
-              ++ lib.optional cfg.enableNavigator "L+ /var/lib/cockpit/navigator - - - - ${self.packages.${pkgs.stdenv.hostPlatform.system}.cockpit-navigator}/share/cockpit/navigator";
+              ++ lib.optional cfg.enableNavigator "L+ /var/lib/cockpit/navigator - - - - ${self.packages.${pkgs.stdenv.hostPlatform.system}.cockpit-navigator}/share/cockpit/navigator"
+              ++ lib.optional cfg.enableNavigator "d /usr/share/cockpit 0755 root root -"
+              ++ lib.optional cfg.enableNavigator "L+ /usr/share/cockpit/navigator - - - - /var/lib/cockpit/navigator";
           };
         };
 
