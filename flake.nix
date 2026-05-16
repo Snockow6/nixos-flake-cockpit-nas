@@ -127,6 +127,23 @@ options.services.cockpit.enableNavigator = lib.mkOption {
 
             systemd.packages = lib.mkIf cfg.enableMachines [ pkgs.libvirt-dbus ];
 
+            # Create static libvirtdbus user so D-Bus can resolve it at startup
+            # (DynamicUser=yes would create it transiently, but D-Bus loads config
+            # before the service starts and needs the user to exist for policy checks)
+            users.groups = lib.mkIf cfg.enableMachines {
+              libvirt = {};
+              libvirtdbus = {};
+            };
+
+            users.users = lib.mkIf cfg.enableMachines {
+              libvirtdbus = {
+                isSystemUser = true;
+                group = "libvirtdbus";
+                extraGroups = [ "qemu-libvirtd" "libvirtd" "libvirt" ];
+                description = "Libvirt D-Bus daemon user";
+              };
+            };
+
             environment.systemPackages = with pkgs;
               [
                 cockpit-fixed
