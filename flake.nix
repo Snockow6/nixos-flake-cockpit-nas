@@ -104,7 +104,18 @@ options.services.cockpit.enableNavigator = lib.mkOption {
             };
 
             systemd.services.cockpit.serviceConfig.PrivateDevices = false;
-            systemd.services.cockpit.path = lib.mkIf cfg.enableMachines [ pkgs.virt-manager ];
+            systemd.services.cockpit.path = lib.mkIf cfg.enableMachines [ pkgs.virt-manager pkgs.libosinfo ];
+            systemd.services.cockpit.environment = lib.mkIf cfg.enableMachines {
+              GI_TYPELIB_PATH = lib.makeSearchPath "lib/girepository-1.0" [
+                pkgs.glib
+                pkgs.gobject-introspection
+                pkgs.libosinfo
+              ];
+              PYTHONPATH = lib.makeSearchPath "lib/python3.13/site-packages" (with pkgs; [
+                python3Packages.pygobject3
+                python3Packages.pycairo
+              ]);
+            };
             systemd.services."cockpit-wsinstance-https@".serviceConfig.PrivateDevices = false;
             systemd.services."cockpit-wsinstance-http@".serviceConfig.PrivateDevices = false;
 
