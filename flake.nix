@@ -104,6 +104,7 @@ options.services.cockpit.enableNavigator = lib.mkOption {
             };
 
             systemd.services.cockpit.serviceConfig.PrivateDevices = false;
+            systemd.services.cockpit.path = lib.mkIf cfg.enableMachines [ pkgs.virt-manager ];
             systemd.services."cockpit-wsinstance-https@".serviceConfig.PrivateDevices = false;
             systemd.services."cockpit-wsinstance-http@".serviceConfig.PrivateDevices = false;
 
