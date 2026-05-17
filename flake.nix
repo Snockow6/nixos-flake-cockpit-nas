@@ -123,10 +123,7 @@ options.services.cockpit.enableNavigator = lib.mkOption {
 
             virtualisation.libvirtd = lib.mkIf cfg.enableMachines {
               enable = true;
-              qemu = {
-                ovmf.enable = true;
-                swtpm.enable = true;
-              };
+              qemu.swtpm.enable = true;
             };
 
             services.dbus.packages = lib.mkIf cfg.enableMachines [ pkgs.libvirt-dbus ];
