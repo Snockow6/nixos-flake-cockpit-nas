@@ -154,7 +154,7 @@ options.services.cockpit.enableNavigator = lib.mkOption {
                 self.packages.${pkgs.stdenv.hostPlatform.system}.cockpit-file-sharing
               ]
               ++ lib.optional cfg.enableMachines unstable.cockpit-machines
-              ++ lib.optional cfg.enableMachines qemu
+              ++ lib.optionals cfg.enableMachines [ qemu virt-manager ]
               ++ lib.optional cfg.enableZfs cockpit-zfs-fixed
               ++ lib.optional cfg.enableZfs (python312.withPackages (ps: [ ps.py-libzfs ]))
               ++ lib.optional cfg.enableZfs zfs
