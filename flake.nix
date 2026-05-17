@@ -121,7 +121,13 @@ options.services.cockpit.enableNavigator = lib.mkOption {
               autoPrune.enable = true;
             };
 
-            virtualisation.libvirtd.enable = lib.mkIf cfg.enableMachines true;
+            virtualisation.libvirtd = lib.mkIf cfg.enableMachines {
+              enable = true;
+              qemu = {
+                ovmf.enable = true;
+                swtpm.enable = true;
+              };
+            };
 
             services.dbus.packages = lib.mkIf cfg.enableMachines [ pkgs.libvirt-dbus ];
 
@@ -151,6 +157,7 @@ options.services.cockpit.enableNavigator = lib.mkOption {
                 self.packages.${pkgs.stdenv.hostPlatform.system}.cockpit-file-sharing
               ]
               ++ lib.optional cfg.enableMachines unstable.cockpit-machines
+              ++ lib.optional cfg.enableMachines qemu
               ++ lib.optional cfg.enableZfs cockpit-zfs-fixed
               ++ lib.optional cfg.enableZfs (python312.withPackages (ps: [ ps.py-libzfs ]))
               ++ lib.optional cfg.enableZfs zfs
